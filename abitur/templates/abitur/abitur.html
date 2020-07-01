@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Die Konkurrenz schläft nicht</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link
+            rel="stylesheet"
+            href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
+            integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+            crossorigin="anonymous"
+    />
+    <style>
+        .student-checked {
+            color: #76a914;
+        }
+
+        .student-unchecked {
+            color: darkgrey;
+        }
+
+        .student-winner {
+            color: #b8a12c;
+        }
+
+        .student-unknown {
+            color: darkgrey;
+        }
+
+        #update:hover {
+            background-color: #2bb6be;
+        }
+
+        #funded-only {
+            color: tomato;
+        }
+
+        a {
+            color: #0064bd;
+        }
+    </style>
+    <script>
+        function getCookie(name) {
+            let matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + "=([^;]*)"
+            ));
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
+
+        function spin() {
+            let element = document.getElementById('update');
+            let alert_element = document.getElementById('updateAlert');
+            element.innerHTML = `<span class="spinner-grow spinner-grow-sm text-danger" role="status" aria-hidden="true"></span>`
+            alert_element.innerText = 'Обновляем...'
+            alert_element.classList.remove('alert-danger')
+            alert_element.classList.remove('alert-success')
+            alert_element.classList.add('alert-warning')
+        }
+
+        function check(elem) {
+            const id = elem.dataset.studentId;
+            const tag = elem.tagName.toLowerCase()
+            const csrf = getCookie('csrftoken');
+            const data = {'student_id': id, 'tag': tag};
+
+            fetch(`http://klavionik.cc/olympics-checked/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(data)
+            }).then(function () {
+                let element = document.getElementById(`check${id}`);
+                if (element.classList.contains('student-checked')) {
+                    element.classList.remove('student-checked');
+                    element.classList.add('student-unchecked');
+                    return
+                }
+                element.classList.remove('student-unchecked');
+                element.classList.add('student-checked');
+            })
+        }
+
+        function winner(elem) {
+            const id = elem.dataset.studentId;
+            const csrf = getCookie('csrftoken');
+            const data = {'student_id': id};
+
+            fetch(`http://klavionik.cc/olympics-winner/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(data)
+            }).then(function () {
+                let element = document.getElementById(`winner${id}`);
+                if (element.classList.contains('student-winner')) {
+                    element.classList.remove('student-winner');
+                    element.classList.add('student-unknown');
+                    return
+                }
+                element.classList.remove('student-unknown');
+                element.classList.add('student-winner');
+            })
+        }
+    </script>
+</head>
+<body>
+<div class="container-fluid container-lg">
+    <div class="row mt-5 justify-content-center no-gutters">
+        <div class="col-lg-10 col-sm-12 p-3">
+            <div class="text-center h3">Список потенциальных изобретателей ГМО-хурмы,<br> которая не вяжет рот</div>
+            <div class="d-flex align-items-center justify-content-between m-2 mt-4">
+                <div class="form-inline">
+                    <form action="{% url 'update' %}" method="post">
+                        {% csrf_token %}
+                        <button id="update" onclick="spin()" class="btn" type="submit"><i class="fas fa-redo fa-lg"></i>
+                        </button>
+                    </form>
+                    <div id="updateAlert"
+                         class="alert {{ alert_class }} font-weight-bold m-0 p-2 ml-2">{{ alert_text }}</div>
+                </div>
+                <div class="form-inline">
+                    <form action="{% url 'abitur' %}" method="get">
+                        <label for="filter" class="sr-only">Период</label>
+                        <select id="filter" name="period" class="form-control">
+                            {% for field in form.period %}
+                                {{ field }}
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-dark" type="submit">OK</button>
+                    </form>
+                </div>
+            </div>
+            <table class="table table-bordered mt-1">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Имя</th>
+                    <th>Дата</th>
+                    <th>Вуз</th>
+                    <th>БВИ?</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for student in students %}
+                    <tr class="{% if student.bvi %}table-danger{% endif %}">
+                        <th>{{ forloop.counter }}</th>
+                        <td><a data-student-id="{{ student.id }}" target="_blank"
+                               href="https://www.google.ru/search?q={{ student.name|lower }} олимпиада"
+                               onclick="check(this)">{{ student.name }}</a>
+                            <span class="ml-2">
+                                {% if student.funded_only %}<i id="funded-only" class="fas fa-exclamation-circle fa-lg"
+                                                               title="Заявление только на бюджет"></i>{% endif %}
+                                <i id="check{{ student.id }}" data-student-id="{{ student.id }}"
+                                   class="btn fas fa-user-check fa-lg align-baseline {% if student.is_checked %} student-checked {% else %} student-unchecked {% endif %} ml-2 p-0"
+                                   title="Олимпиады проверены" onclick="check(this)"></i>
+                                <i id="winner{{ student.id }}" data-student-id="{{ student.id }}"
+                                   class="btn fas fa-user-graduate fa-lg align-baseline {% if student.is_winner %} student-winner {% else %} student-unknown {% endif %} ml-2 p-0"
+                                   title="Призер олимпиады" onclick="winner(this)"></i>
+                            </span>
+                        </td>
+                        <td>{{ student.application_date|date }}</td>
+                        <td>{{ student.school.name }}</td>
+                        <td class="text-center">{{ student.bvi|yesno|capfirst }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th>Сеченова:</th>
+                    <td colspan="4">{{ sech_count|default:'0' }}
+                        (из них БВИ <strong>{{ sech_bvi_count|default:'0' }}</strong>,
+                        только на бюджет <strong>{{ sech_funded_only_count|default:'0' }}</strong>, олимпиадников <strong>{{ sechenova_winners_count|default:'0' }}</strong>)
+                    </td>
+                </tr>
+                <tr>
+                    <th>Пирогова:</th>
+                    <td colspan="4">{{ pirogova_count|default:'0' }} (из них БВИ <strong>{{ pirogova_bvi_count|default:'0' }}</strong>,
+                        только на бюджет <strong>{{ pirogova_funded_only_count|default:'0' }}</strong>, олимпиадников <strong>{{ pirogova_winners_count|default:'0' }}</strong>)
+                    </td>
+                </tr>
+                <tr>
+                    <th>Итого:</th>
+                    <td colspan="4">{{ total_count|default:'0' }}</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
