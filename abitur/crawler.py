@@ -21,7 +21,7 @@ logger.addHandler(h)
 class AsyncCrawler:
 
     def __init__(self):
-        self.parsers = [PirogovaParser]
+        self.parsers = [PirogovaParser, SechenovaParser, SechenovaBVIParser]
 
     async def _get_sources(self):
         logger.debug('Getting sources.')
@@ -41,10 +41,10 @@ class AsyncCrawler:
 
     async def _get_source(self, session, parser):
         await parser.get_page(session)
-        source = await sync_to_async(parser.get_source)()
+        await sync_to_async(parser.get_source)()
         logger.debug('Got source')
 
-        return source
+        return parser.source_url
 
     async def _crawl(self):
         logger.debug('Crawler is running')

@@ -33,6 +33,9 @@ class Category:
         self.funded_only = funded_only
         self._students = raw_students
 
+    def __len__(self):
+        return len(self._students)
+
     def __iter__(self):
         for student in self._students:
             yield student
@@ -60,7 +63,6 @@ class Parser:
         self.categories = []
         self._page = None
         self._school = None
-        self.students = []
         self.source_url = ''
 
     async def run(self, session, executor):
@@ -74,7 +76,7 @@ class Parser:
         return finished_parser
 
     def __len__(self):
-        return len(self.students)
+        return sum([len(category) for category in self.categories])
 
     def __iter__(self):
         for category in self.categories:
@@ -89,12 +91,11 @@ class Parser:
     def get_source(self):
         soup = BeautifulSoup(self._page, 'html.parser')
         link_element = soup.find('a', text=self.link_text)
-        source_url = self.base_url + link_element.get('href', '')
-        return source_url
+        self.source_url = self.base_url + link_element.get('href', '')
 
     def get_file(self):
-        source = self.get_source()
-        file = read_pdf(source, pages=self.pages)
+        self.get_source()
+        file = read_pdf(self.source_url, pages=self.pages)
         return file
 
     def _run(self):
@@ -142,7 +143,7 @@ class PirogovaParser(Parser):
         self._raw_categories = pirogova_categories(bvi=[], special=[], general=[], contract=[])
 
     def clean_rows(self, file):
-        for row, name_index, date_index in table_rows(file):
+        for row, name_index, date_index in table_rows(file, self.find_columns):
             if row[0] and row[0] != '№':
                 yield row, name_index, date_index
 
@@ -158,6 +159,16 @@ class PirogovaParser(Parser):
             Category(except_funded_only)
         ]
 
+    @staticmethod
+    def find_columns(table):
+        head_row = table.data[0]
+        try:
+            date = head_row.index('Дата подачи \nзаявления')
+            name = head_row.index('Фамилия, имя, отчество')
+        except ValueError as e:
+            raise ValueError('Column not found in row') from e
+        return name, date
+
 
 class SechenovaParser(Parser):
     link_text = 'Бакалавриат, специалитет - список лиц подавших документы.pdf'
@@ -166,7 +177,6 @@ class SechenovaParser(Parser):
     page_url = 'https://www.sechenov.ru/admissions/priemnaya-kampaniya-2020/spiski-lits-podavshikh-dokumenty-2020-2021.php'
     pages = '1-4'
     school_name = SECHENOVA
-    bvi = False
 
     def __init__(self):
         super().__init__()
@@ -175,7 +185,7 @@ class SechenovaParser(Parser):
     def clean_rows(self, file):
         go = False
 
-        for row in table_rows(file):
+        for row, name_index, date_index in table_rows(file, self.find_columns):
             if self.start_predicate(row):
                 go = True
             if not go:
@@ -186,7 +196,18 @@ class SechenovaParser(Parser):
                 row = row[0].split('\n')
             if not row[0].isdigit():
                 continue
-            yield row
+            yield row, name_index, date_index
+
+    def clean_categories(self):
+        general_set = set(self._raw_categories.general)
+        contract_set = set(self._raw_categories.contract)
+        funded_only = general_set - contract_set
+        except_funded_only = general_set - funded_only
+
+        self.categories = [
+            Category(funded_only, funded_only=True),
+            Category(except_funded_only)
+        ]
 
     @staticmethod
     def break_predicate(row):
@@ -196,11 +217,28 @@ class SechenovaParser(Parser):
     def start_predicate(row):
         return '06.05.01' in row[0]
 
+    @staticmethod
+    def find_columns(_):
+        name_index = 1
+        date_index = 2
+        return name_index, date_index
+
 
 class SechenovaBVIParser(SechenovaParser):
     link_text = 'Бакалавриат, специалитет - список лиц подавших документы без ВИ.pdf'
     pages = 'all'
-    bvi = True
 
     def __init__(self):
         super().__init__()
+        self._raw_categories = sechenova_categories(contract=[], general=[])
+
+    def clean_categories(self):
+        general_set = set(self._raw_categories.general)
+        contract_set = set(self._raw_categories.contract)
+        funded_only = general_set - contract_set
+        except_funded_only = general_set - funded_only
+
+        self.categories = [
+            Category(funded_only, bvi=True, funded_only=True),
+            Category(except_funded_only, bvi=True)
+        ]

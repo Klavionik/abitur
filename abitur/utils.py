@@ -16,21 +16,11 @@ def find_funded(general, contract):
     return funded_only, except_funded_only
 
 
-def table_rows(pdf_file):
+def table_rows(pdf_file, find_column_indices):
     for table in pdf_file:
-        name_index, date_index = find_columns_index(table)
+        name_index, date_index = find_column_indices(table)
         for row in table.data:
             yield row, name_index, date_index
-
-
-def find_columns_index(table):
-    head_row = table.data[0]
-    try:
-        date = head_row.index('Дата подачи \nзаявления')
-        name = head_row.index('Фамилия, имя, отчество')
-    except ValueError as e:
-        raise ValueError('Column not found in row') from e
-    return name, date
 
 
 def make_date(string):
