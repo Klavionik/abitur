@@ -73,7 +73,7 @@ class UpdateView(View):
 
     @staticmethod
     def update_checksum(parsers):
-        checksum_string = ''.join([make_checksum(parser.source) for parser in parsers])
+        checksum_string = ''.join([make_checksum(parser.source_url) for parser in parsers])
         cache.set('checksum', checksum_string)
 
 

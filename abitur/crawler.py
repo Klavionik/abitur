@@ -21,7 +21,7 @@ logger.addHandler(h)
 class AsyncCrawler:
 
     def __init__(self):
-        self.parsers = [PirogovaParser, SechenovaParser, SechenovaBVIParser]
+        self.parsers = [PirogovaParser]
 
     async def _get_sources(self):
         logger.debug('Getting sources.')

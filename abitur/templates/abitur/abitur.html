@@ -149,7 +149,7 @@
                 </thead>
                 <tbody>
                 {% for student in students %}
-                    <tr class="{% if student.bvi %}table-danger{% endif %}">
+                    <tr class="{% if student.bvi %}table-warning{% endif %}">
                         <th>{{ forloop.counter }}</th>
                         <td><a data-student-id="{{ student.id }}" target="_blank"
                                href="https://www.google.ru/search?q={{ student.name|lower }} олимпиада"
