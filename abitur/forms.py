@@ -25,12 +25,12 @@ class PeriodFilterForm(forms.Form):
         if super().is_valid():
             period = self.cleaned_data['period']
             if period == self.last_week:
-                return Q(application_date__gte=date.today() - timedelta(days=7))
+                return Q(application_date__gt=date.today() - timedelta(days=7))
             if period == self.last_month:
                 return Q(application_date__month=date.today().month)
             if period == self.all:
                 return Q()
-        return Q(application_date__gte=date.today() - timedelta(days=3))
+        return Q(application_date__gt=date.today() - timedelta(days=3))
 
     def get_period(self):
         return self.is_valid()
