@@ -3,8 +3,8 @@ from unittest import TestCase
 from unittest.mock import patch
 from abitur.parsers import PirogovaParser
 from django.conf import settings
-from camelot import read_pdf
-from camelot.core import TableList
+import camelot
+
 
 class PirogovaParserTest(TestCase):
     file_path = os.path.join(settings.BASE_DIR, 'abitur', 'fixtures', 'pirogova_list.pdf')
@@ -35,3 +35,16 @@ class PirogovaParserTest(TestCase):
         file = self.parser.get_file()
 
         self.assertEqual(file, self.file)
+
+    def test_parse_tables(self):
+        pdf = camelot.read_pdf(self.file_path, pages='all')
+        self.parser.parse_tables(pdf)
+        expected_total = 62
+        expected_bvi = 1
+        expected_funded_only = 27
+        expected_others = 34
+
+        self.assertEqual(len(self.parser), expected_total)
+        self.assertEqual(len(self.parser.categories[0]), expected_bvi)
+        self.assertEqual(len(self.parser.categories[1]), expected_funded_only)
+        self.assertEqual(len(self.parser.categories[2]), expected_others)
