@@ -148,7 +148,7 @@ class PirogovaParser(Parser):
                 yield row, name_index, date_index
 
     def clean_categories(self):
-        general_set = set(self._raw_categories.general)
+        general_set = set(self._raw_categories.general) ^ set(self._raw_categories.bvi)
         contract_set = set(self._raw_categories.contract)
         funded_only = general_set - contract_set
         except_funded_only = general_set - funded_only
