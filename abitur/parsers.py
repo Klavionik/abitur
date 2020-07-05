@@ -60,7 +60,7 @@ class Parser:
 
     def __init__(self):
         self._raw_categories = None
-        self.categories = []
+        self.categories = {}
         self._page = None
         self._school = None
         self.source_url = ''
@@ -76,10 +76,10 @@ class Parser:
         return finished_parser
 
     def __len__(self):
-        return sum([len(category) for category in self.categories])
+        return sum([len(category) for category in self.categories.values()])
 
     def __iter__(self):
-        for category in self.categories:
+        for category in self.categories.values():
             for student in category:
                 yield category.make_student(*student, self._school)
 
@@ -153,11 +153,11 @@ class PirogovaParser(Parser):
         funded_only = general_set - contract_set
         except_funded_only = general_set - funded_only
 
-        self.categories = [
-            Category(self._raw_categories.bvi, bvi=True),
-            Category(funded_only, funded_only=True),
-            Category(except_funded_only)
-        ]
+        self.categories = {
+            'bvi': Category(self._raw_categories.bvi, bvi=True),
+            'funded_only': Category(funded_only, funded_only=True),
+            'general': Category(except_funded_only)
+        }
 
     @staticmethod
     def find_columns(table):
@@ -174,7 +174,8 @@ class SechenovaParser(Parser):
     link_text = 'Бакалавриат, специалитет - список лиц подавших документы.pdf'
     link_bvi_text = 'Бакалавриат, специалитет - список лиц подавших документы без ВИ.pdf'
     base_url = 'https://www.sechenov.ru/'
-    page_url = 'https://www.sechenov.ru/admissions/priemnaya-kampaniya-2020/spiski-lits-podavshikh-dokumenty-2020-2021.php'
+    page_url = 'https://www.sechenov.ru/admissions/priemnaya-kampaniya-2020/' \
+               'spiski-lits-podavshikh-dokumenty-2020-2021.php'
     pages = '1-4'
     school_name = SECHENOVA
 
@@ -204,10 +205,10 @@ class SechenovaParser(Parser):
         funded_only = general_set - contract_set
         except_funded_only = general_set - funded_only
 
-        self.categories = [
-            Category(funded_only, funded_only=True),
-            Category(except_funded_only)
-        ]
+        self.categories = {
+            'funded_only': Category(funded_only, funded_only=True),
+            'general': Category(except_funded_only)
+        }
 
     @staticmethod
     def break_predicate(row):
@@ -238,7 +239,7 @@ class SechenovaBVIParser(SechenovaParser):
         funded_only = general_set - contract_set
         except_funded_only = general_set - funded_only
 
-        self.categories = [
-            Category(funded_only, bvi=True, funded_only=True),
-            Category(except_funded_only, bvi=True)
-        ]
+        self.categories = {
+            'funded_only': Category(funded_only, bvi=True, funded_only=True),
+            'general': Category(except_funded_only, bvi=True),
+        }
