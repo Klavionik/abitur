@@ -6,7 +6,6 @@ from concurrent import futures
 import aiohttp
 from asgiref.sync import sync_to_async
 
-from abitur.parsers import PirogovaParser, SechenovaParser, SechenovaBVIParser
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -20,16 +19,18 @@ logger.addHandler(h)
 
 class AsyncCrawler:
 
-    def __init__(self):
-        self.parsers = [PirogovaParser, SechenovaParser, SechenovaBVIParser]
+    def __init__(self, *parsers):
+        self.parsers = []
+
+        for parser in parsers:
+            self.parsers.append(parser())
 
     async def _get_sources(self):
         logger.debug('Getting sources.')
         tasks = []
 
         async with aiohttp.ClientSession() as session:
-            for _parser in self.parsers:
-                parser = _parser()
+            for parser in self.parsers:
                 task = asyncio.create_task(self._get_source(session, parser))
                 tasks.append(task)
                 logger.debug(f'Task with name {task.get_name()} added')
@@ -53,8 +54,7 @@ class AsyncCrawler:
 
         async with aiohttp.ClientSession() as session:
             with futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
-                for _parser in self.parsers:
-                    parser = _parser()
+                for parser in self.parsers:
                     task = asyncio.create_task(parser.run(session, executor),
                                                name=f'{parser.__class__.__name__} task')
                     tasks.append(task)
