@@ -63,8 +63,9 @@
             const tag = elem.tagName.toLowerCase()
             const csrf = getCookie('csrftoken');
             const data = {'student_id': id, 'tag': tag};
+            const url = '/olympics-checked/'
 
-            fetch(`http://klavionik.cc/olympics-checked/`, {
+            fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,8 +89,9 @@
             const id = elem.dataset.studentId;
             const csrf = getCookie('csrftoken');
             const data = {'student_id': id};
+            const url = '/olympics-winner/'
 
-            fetch(`http://klavionik.cc/olympics-winner/`, {
+            fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
