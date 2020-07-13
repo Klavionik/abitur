@@ -10,7 +10,7 @@ from .forms import PeriodFilterForm
 from .models import Student, sech_count, pirogova_count, sech_bvi_count, sech_funded_only_count, \
     pirogova_funded_only_count, pirogova_winners_count, sechenova_winners_count, pirogova_bvi_count
 from .utils import make_checksum, update_records
-from .parsers import PirogovaParser, SechenovaParser, SechenovaBVIParser
+from .parsers import parser_registry
 
 
 class AjaxWinnerView(View):
@@ -64,7 +64,7 @@ class AjaxCheckedView(AjaxWinnerView):
 
 class UpdateView(View):
     def post(self, request, *args, **kwargs):
-        crawler = AsyncCrawler(PirogovaParser, SechenovaParser, SechenovaBVIParser)
+        crawler = AsyncCrawler(*parser_registry)
         parsers = crawler.crawl()
         update_records(parsers)
         self.update_checksum(parsers)
@@ -136,7 +136,7 @@ class AbiturView(View):
 
     @staticmethod
     def total_checksum():
-        crawler = AsyncCrawler(PirogovaParser, SechenovaParser, SechenovaBVIParser)
+        crawler = AsyncCrawler(*parser_registry)
         sources = crawler.get_sources()
         return ''.join([make_checksum(link) for link in sources])
 

@@ -25,6 +25,13 @@ pirogova_categories = namedtuple(
 sechenova_categories = namedtuple(
     'sechenova_categories', 'contract general')
 
+parser_registry = []
+
+
+def register(parser_class):
+    parser_registry.append(parser_class)
+    return parser_class
+
 
 class Category:
 
@@ -131,6 +138,7 @@ class Parser:
         raise NotImplementedError("Each Parser subclass must implement it's own method")
 
 
+@register
 class PirogovaParser(Parser):
     link_text = '06.03.01 Биология'
     base_url = 'http://rsmu.ru/'
@@ -170,6 +178,7 @@ class PirogovaParser(Parser):
         return name, date
 
 
+@register
 class SechenovaParser(Parser):
     link_text = 'Бакалавриат, специалитет - список лиц подавших документы.pdf'
     link_bvi_text = 'Бакалавриат, специалитет - список лиц подавших документы без ВИ.pdf'
@@ -225,6 +234,7 @@ class SechenovaParser(Parser):
         return name_index, date_index
 
 
+@register
 class SechenovaBVIParser(SechenovaParser):
     link_text = 'Бакалавриат, специалитет - список лиц подавших документы без ВИ.pdf'
     pages = 'all'
