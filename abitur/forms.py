@@ -30,7 +30,7 @@ class PeriodFilterForm(forms.Form):
                 return Q(application_date__month=date.today().month)
             if period == self.all:
                 return Q()
-        return Q(application_date__gt=date.today() - timedelta(days=3))
+        return Q(application_date__gte=date.today() - timedelta(days=3))
 
     def get_period(self):
         return self.is_valid()
