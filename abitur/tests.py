@@ -1,8 +1,13 @@
 import os
 from unittest import TestCase, TestSuite
 from unittest.mock import patch, MagicMock
+
+from django.urls import reverse
+
+from abitur.models import Student
 from abitur.parsers import PirogovaParser, SechenovaParser, SechenovaBVIParser
 from django.conf import settings
+from django.test import TestCase as DjangoTestCase
 from json import load
 
 
@@ -114,7 +119,37 @@ class SechenovaBVIParserTest(ParserTestCase):
         self.assertEqual(len(self.parser), expected_total)
 
 
-test_cases = (PirogovaParserTest, SechenovaParserTest, SechenovaBVIParserTest)
+class ViewTests(DjangoTestCase):
+    fixtures = ['students.json']
+
+    def test_abitur_view(self):
+        path = reverse('abitur')
+        response = self.client.get(path)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_check_view(self):
+        path = reverse('check-student')
+        student = Student.objects.first()
+        before_check = student.is_checked
+        payload = {'tag': 'i', 'student_id': student.id}
+        response = self.client.post(path, data=payload, content_type='application/json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(not before_check)
+
+    def test_winner_view(self):
+        path = reverse('olympics-winner')
+        random_student = Student.objects.first()
+        before_check = random_student.is_winner
+        payload = {'student_id': random_student.id}
+        response = self.client.post(path, data=payload, content_type='application/json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(not before_check)
+
+
+test_cases = (PirogovaParserTest, SechenovaParserTest, SechenovaBVIParserTest, ViewTests)
 
 
 def load_tests(loader, tests, pattern):
