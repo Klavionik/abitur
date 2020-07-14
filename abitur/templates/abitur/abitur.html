@@ -119,7 +119,7 @@
             <div class="text-center h3">Список потенциальных изобретателей ГМО-хурмы,<br> которая не вяжет рот</div>
             <div class="d-flex align-items-center justify-content-between m-2 mt-4">
                 <div class="form-inline">
-                    <form action="{% url 'update' %}" method="post">
+                    <form action="{{ url('update') }}" method="post">
                         {% csrf_token %}
                         <button id="update" onclick="spin()" class="btn" type="submit"><i class="fas fa-redo fa-lg"></i>
                         </button>
@@ -128,7 +128,7 @@
                          class="alert {{ alert_class }} font-weight-bold m-0 p-2 ml-2">{{ alert_text }}</div>
                 </div>
                 <div class="form-inline">
-                    <form action="{% url 'abitur' %}" method="get">
+                    <form action="{{ url('abitur') }}" method="get">
                         <label for="filter" class="sr-only">Период</label>
                         <select id="filter" name="period" class="form-control">
                             {% for field in form.period %}
@@ -152,7 +152,7 @@
                 <tbody>
                 {% for student in students %}
                     <tr class="{% if student.bvi %}table-warning{% endif %}">
-                        <th>{{ forloop.counter }}</th>
+                        <th>{{ loop.index }}</th>
                         <td><a data-student-id="{{ student.id }}" target="_blank"
                                href="https://www.google.ru/search?q={{ student.name|lower }} олимпиада"
                                onclick="check(this)">{{ student.name }}</a>
@@ -176,20 +176,20 @@
                 <tfoot>
                 <tr>
                     <th>Сеченова:</th>
-                    <td colspan="4">{{ sech_count|default:'0' }}
-                        (из них БВИ <strong>{{ sech_bvi_count|default:'0' }}</strong>,
-                        только на бюджет <strong>{{ sech_funded_only_count|default:'0' }}</strong>, олимпиадников <strong>{{ sechenova_winners_count|default:'0' }}</strong>)
+                    <td colspan="4">{{ sech_count|default('0') }}
+                        (из них БВИ <strong>{{ sech_bvi_count|default('0') }}</strong>,
+                        только на бюджет <strong>{{ sech_funded_only_count|default('0') }}</strong>, олимпиадников <strong>{{ sechenova_winners_count|default('0') }}</strong>)
                     </td>
                 </tr>
                 <tr>
                     <th>Пирогова:</th>
-                    <td colspan="4">{{ pirogova_count|default:'0' }} (из них БВИ <strong>{{ pirogova_bvi_count|default:'0' }}</strong>,
-                        только на бюджет <strong>{{ pirogova_funded_only_count|default:'0' }}</strong>, олимпиадников <strong>{{ pirogova_winners_count|default:'0' }}</strong>)
+                    <td colspan="4">{{ pirogova_count|default('0') }} (из них БВИ <strong>{{ pirogova_bvi_count|default('0') }}</strong>,
+                        только на бюджет <strong>{{ pirogova_funded_only_count|default('0') }}</strong>, олимпиадников <strong>{{ pirogova_winners_count|default('0') }}</strong>)
                     </td>
                 </tr>
                 <tr>
                     <th>Итого:</th>
-                    <td colspan="4">{{ total_count|default:'0' }}</td>
+                    <td colspan="4">{{ total_count|default('0') }}</td>
                 </tr>
                 </tfoot>
             </table>

@@ -1,0 +1,32 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+    - 80:8000
+    networks:
+      - db_network
+    environment:
+      - 'POSTGRES_DB'
+      - 'POSTGRES_USER'
+      - 'POSTGRES_PASSWORD'
+    depends_on:
+      - db
+
+  db:
+    image: library/postgres:alpine
+    environment:
+      - 'POSTGRES_DB'
+      - 'POSTGRES_USER'
+      - 'POSTGRES_PASSWORD'
+    volumes:
+      - db_volume:/var/lib/postgresql/data
+    networks:
+      - db_network
+
+volumes:
+  db_volume:
+
+networks:
+  db_network:
+    driver: bridge

@@ -142,5 +142,4 @@ class AbiturView(View):
 
 
 class HomeView(RedirectView):
-    permanent = True
     url = reverse_lazy('abitur')

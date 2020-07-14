@@ -185,7 +185,7 @@ class SechenovaParser(Parser):
     base_url = 'https://www.sechenov.ru/'
     page_url = 'https://www.sechenov.ru/admissions/priemnaya-kampaniya-2020/' \
                'spiski-lits-podavshikh-dokumenty-2020-2021.php'
-    pages = '1-4'
+    pages = '1-6'
     school_name = SECHENOVA
 
     def __init__(self):
