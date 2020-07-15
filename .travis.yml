@@ -1,0 +1,30 @@
+language: minimal
+
+services:
+  - docker
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.4.2
+
+before_install:
+  - openssl aes-256-cbc -K $encrypted_1ee06850155d_key -iv $encrypted_1ee06850155d_iv -in id_rsa_do.enc -out $HOME/.ssh/id_rsa -d
+  - chmod 600 $HOME/.ssh/id_rsa
+
+install:
+  - echo "$DO_PUBLIC_KEY" | base64 -d >> $HOME/.ssh/known_hosts
+
+before_script:
+  - docker-compose build
+  - docker-compose up -d
+  - docker-compose ps
+
+script:
+  - docker-compose exec app python manage.py migrate
+  - docker-compose exec app python manage.py createcachetable
+  - docker-compose exec app python manage.py test abitur -v 2
+
+deploy:
+  provider: script
+  script: ssh "$DO_USER"@"$DO_DOMAIN" bash --login -c cd abitur && git fetch && git reset --hard origin/master && docker-compose up --build -d
+  on:
+    branch: master

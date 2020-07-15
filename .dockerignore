@@ -1,0 +1,9 @@
+.travis.yml
+deploy.sh
+id_rsa_do.enc
+Dockerfile
+docker-compose.yml
+.gitignore
+.gitattributes
+.dockerignore
+.git

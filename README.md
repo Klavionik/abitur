@@ -1,4 +1,4 @@
-# Парсер данных о поступающих в московские вузы
+# Парсер данных о поступающих в московские вузы [![Build Status](https://travis-ci.com/Klavionik/abitur.svg?branch=master)](https://travis-ci.com/Klavionik/abitur)
 
 ## Личный проект, июнь 2020 г.
 
