@@ -1,5 +1,7 @@
 from json import loads, JSONDecodeError
 
+from aiohttp import ClientConnectionError
+from django.contrib import messages
 from django.core.cache import cache
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.urls import reverse_lazy
@@ -65,10 +67,14 @@ class AjaxCheckedView(AjaxWinnerView):
 class UpdateView(View):
     def post(self, request, *args, **kwargs):
         crawler = AsyncCrawler(*parser_registry)
-        parsers = crawler.crawl()
-        update_records(parsers)
-        self.update_checksum(parsers)
-        cache.get_or_set('initialized', True)
+        try:
+            parsers = crawler.crawl()
+        except ClientConnectionError:
+            messages.error(request, 'Не удалось обновить списки. Попробуйте повторить позже.')
+        else:
+            update_records(parsers)
+            self.update_checksum(parsers)
+            cache.get_or_set('initialized', True)
 
         return redirect('abitur')
 
@@ -84,6 +90,8 @@ class AbiturView(View):
     alert_class_ok = 'alert-success'
     alert_text_warning = 'Пора обновить'
     alert_class_warning = 'alert-danger'
+    alert_text_error = 'Не удалось проверить обновления'
+    alert_class_error = 'alert-danger'
 
     def get(self, request, *args, **kwargs):
         initialized = cache.get('initialized', False)
@@ -127,6 +135,10 @@ class AbiturView(View):
 
     def check_sources(self):
         checksum = self.total_checksum()
+
+        if checksum is None:
+            return self.alert_text_error, self.alert_class_error
+
         cached_checksum = cache.get('checksum')
 
         if cached_checksum:
@@ -137,7 +149,10 @@ class AbiturView(View):
     @staticmethod
     def total_checksum():
         crawler = AsyncCrawler(*parser_registry)
-        sources = crawler.get_sources()
+        try:
+            sources = crawler.get_sources()
+        except ClientConnectionError:
+            return None
         return ''.join([make_checksum(link) for link in sources])
 
 

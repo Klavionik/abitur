@@ -25,11 +25,13 @@ class AsyncCrawler:
         for parser in parsers:
             self.parsers.append(parser())
 
+        self._timeout = aiohttp.ClientTimeout(total=30)
+
     async def _get_sources(self):
         logger.debug('Getting sources.')
         tasks = []
 
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=self._timeout) as session:
             for parser in self.parsers:
                 task = asyncio.create_task(self._get_source(session, parser))
                 tasks.append(task)
@@ -52,7 +54,7 @@ class AsyncCrawler:
 
         tasks = []
 
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=self._timeout) as session:
             with futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
                 for parser in self.parsers:
                     task = asyncio.create_task(parser.run(session, executor),
@@ -60,7 +62,7 @@ class AsyncCrawler:
                     tasks.append(task)
                     logger.debug(f'Task with name {task.get_name()} added')
 
-                result = await asyncio.gather(*tasks, return_exceptions=True)
+                result = await asyncio.gather(*tasks)
 
         logger.debug('Crawler finished')
         return result

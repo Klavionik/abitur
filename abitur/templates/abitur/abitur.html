@@ -124,8 +124,17 @@
                         <button id="update" onclick="spin()" class="btn" type="submit"><i class="fas fa-redo fa-lg"></i>
                         </button>
                     </form>
-                    <div id="updateAlert"
-                         class="alert {{ alert_class }} font-weight-bold m-0 p-2 ml-2">{{ alert_text }}</div>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div id="updateAlert" class="alert alert-danger font-weight-bold m-0 p-2 ml-2">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div id="updateAlert" class="alert {{ alert_class }} font-weight-bold m-0 p-2 ml-2">
+                            {{ alert_text }}
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="form-inline">
                     <form action="{{ url('abitur') }}" method="get">
@@ -178,13 +187,16 @@
                     <th>Сеченова:</th>
                     <td colspan="4">{{ sech_count|default('0') }}
                         (из них БВИ <strong>{{ sech_bvi_count|default('0') }}</strong>,
-                        только на бюджет <strong>{{ sech_funded_only_count|default('0') }}</strong>, олимпиадников <strong>{{ sechenova_winners_count|default('0') }}</strong>)
+                        только на бюджет <strong>{{ sech_funded_only_count|default('0') }}</strong>, олимпиадников
+                        <strong>{{ sechenova_winners_count|default('0') }}</strong>)
                     </td>
                 </tr>
                 <tr>
                     <th>Пирогова:</th>
-                    <td colspan="4">{{ pirogova_count|default('0') }} (из них БВИ <strong>{{ pirogova_bvi_count|default('0') }}</strong>,
-                        только на бюджет <strong>{{ pirogova_funded_only_count|default('0') }}</strong>, олимпиадников <strong>{{ pirogova_winners_count|default('0') }}</strong>)
+                    <td colspan="4">{{ pirogova_count|default('0') }} (из них БВИ
+                        <strong>{{ pirogova_bvi_count|default('0') }}</strong>,
+                        только на бюджет <strong>{{ pirogova_funded_only_count|default('0') }}</strong>, олимпиадников
+                        <strong>{{ pirogova_winners_count|default('0') }}</strong>)
                     </td>
                 </tr>
                 <tr>

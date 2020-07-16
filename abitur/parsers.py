@@ -5,6 +5,7 @@ from collections import namedtuple
 
 from bs4 import BeautifulSoup
 from camelot import read_pdf
+from aiohttp import ClientConnectionError
 
 from .utils import table_rows, make_date, get_school
 
@@ -93,11 +94,17 @@ class Parser:
     async def get_page(self, session):
         async with session.get(self.page_url) as response:
             logger.debug(f'Response received with status {response.status}.')
+            if response.status != 200:
+                raise ClientConnectionError()
             self._page = await response.read()
 
     def get_source(self):
         soup = BeautifulSoup(self._page, 'html.parser')
         link_element = soup.find('a', text=self.link_text)
+
+        if not link_element:
+            raise ClientConnectionError('Link not found')
+
         self.source_url = self.base_url + link_element.get('href', '')
 
     def get_file(self):

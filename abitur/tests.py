@@ -109,7 +109,7 @@ class SechenovaBVIParserTest(ParserTestCase):
     data_name = 'sechenova_bvi_data.json'
     parser_class = SechenovaBVIParser
     expected_source = 'https://www.sechenov.ru/upload/iblock/5b9/' \
-               'Bakalavriat_-spetsialitet-_-spisok-lits-podavshikh-dokumenty-bez-VI.pdf'
+                      'Bakalavriat_-spetsialitet-_-spisok-lits-podavshikh-dokumenty-bez-VI.pdf'
 
     def test_parse_tables(self):
         pdf_mock = mock_pdf(self.data)
@@ -152,7 +152,7 @@ class ViewTests(DjangoTestCase):
 test_cases = (PirogovaParserTest, SechenovaParserTest, SechenovaBVIParserTest, ViewTests)
 
 
-def load_tests(loader, tests, pattern):
+def load_tests(loader, *_):
     suite = TestSuite()
     for test_case in test_cases:
         tests = loader.loadTestsFromTestCase(test_case)
