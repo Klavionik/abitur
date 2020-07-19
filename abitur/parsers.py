@@ -25,6 +25,8 @@ pirogova_categories = namedtuple(
     'pirogova_categories', 'bvi special general contract')
 sechenova_categories = namedtuple(
     'sechenova_categories', 'contract general')
+sechenova_bvi_categories = namedtuple(
+    'sechenova_bvi_categories', 'general contract')
 
 parser_registry = []
 
@@ -228,7 +230,7 @@ class SechenovaParser(Parser):
 
     @staticmethod
     def break_predicate(row):
-        return '06.05.01' in row[0] and 'особой' in row[0]
+        return ('06.05.01' in row[0] and 'особой' in row[0]) or '19.03.01' in row[0]
 
     @staticmethod
     def start_predicate(row):
@@ -248,7 +250,7 @@ class SechenovaBVIParser(SechenovaParser):
 
     def __init__(self):
         super().__init__()
-        self._raw_categories = sechenova_categories(contract=[], general=[])
+        self._raw_categories = sechenova_bvi_categories(general=[], contract=[])
 
     def clean_categories(self):
         general_set = set(self._raw_categories.general)
