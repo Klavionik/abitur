@@ -95,7 +95,7 @@ class Parser:
 
     async def get_page(self, session):
         async with session.get(self.page_url) as response:
-            logger.debug(f'Response received with status {response.status}.')
+            logger.debug(f'Response received from {self.source_url} with status {response.status}.')
             if response.status != 200:
                 raise ClientConnectionError()
             self._page = await response.read()
@@ -194,7 +194,7 @@ class SechenovaParser(Parser):
     base_url = 'https://www.sechenov.ru/'
     page_url = 'https://www.sechenov.ru/admissions/priemnaya-kampaniya-2020/' \
                'spiski-lits-podavshikh-dokumenty-2020-2021.php'
-    pages = '1-6'
+    pages = '1-8'
     school_name = SECHENOVA
 
     def __init__(self):
